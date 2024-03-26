@@ -11,8 +11,6 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
-from train import Train2
-
 def PreprocessingHelpers():
     def __init__(self, data, assess_loss):
         self.data = data
