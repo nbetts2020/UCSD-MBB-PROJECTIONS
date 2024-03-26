@@ -12,7 +12,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from helper_jsons_scraping import hardcoded_mbkb_url_schemas as mbkb_schemas
-from helper_jsons_scraping import headers
+from helper_jsons_scraping import headers, conference_scores
 
 class BasketballScraper():
     def __init__(self):
@@ -21,6 +21,7 @@ class BasketballScraper():
         self.d2_schools = self.get_d2_schools()
         self.hardcoded_mbkb_url_schemas = self.get_hardcoded_mbkb_url_schemas()
         self.headers = self.get_headers()
+        self.conference_scores = self.get_conference_scores()
     
     def setup_chrome_driver(self):
         """
@@ -45,6 +46,9 @@ class BasketballScraper():
     
     def get_headers(self):
         return headers
+    
+    def get_conference_scores(self):
+        return conference_scores
     
     def extract_website_prefix(self, url):
         com_index = url.find(".com")
@@ -400,6 +404,7 @@ class BasketballScraper():
                 new_df['Team'] = team
                 new_df['Year'] = year
                 new_df['Conference'] = self.d2_schools[self.d2_schools['Name'] == team].reset_index()['Conference'][0]
+                new_df['Conference_Grade'] = new_df['Conference'].map(self.conference_scores).fillna(1)
                 df = df.append(new_df)
 
                 print(team, year, "Success - Initial URLs")
@@ -431,6 +436,7 @@ class BasketballScraper():
                     new_df['Team'] = team
                     new_df['Year'] = year
                     new_df['Conference'] = self.d2_schools[self.d2_schools['Name'] == team].reset_index()['Conference'][0]
+                    new_df['Conference_Grade'] = new_df['Conference'].map(self.conference_scores).fillna(0.75)
                     df = df.append(new_df)
 
                     print(team, year, "Success - Modified URLs")
