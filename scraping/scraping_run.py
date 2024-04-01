@@ -1,7 +1,10 @@
-from scraping import BasketballScraper
-from cleaning_helpers import CleaningHelpers
+import pandas as pd
+import numpy as np
 
-def main():
+from scraping.scraping_helpers import BasketballScraper
+from scraping.cleaning_helpers import CleaningHelpers
+
+def scraping_main():
     basketball_scraper = BasketballScraper()
     d2_schools_df = basketball_scraper.d2_schools
     d2_schools_list = list(d2_schools_df['Name'])
@@ -14,6 +17,6 @@ def main():
     cleaning_helper.save_to_csv("basketball_data.csv")
 
 if __name__ == "__main__":
-    main()
+    scraping_main()
 
 
