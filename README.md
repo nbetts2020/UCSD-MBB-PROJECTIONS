@@ -1,4 +1,4 @@
-(https://github.com/nbetts2020/UCSD-MBB-PROJECTIONS/blob/main/ucsd_mbb_logo.jpg)
+![test](https://github.com/nbetts2020/UCSD-MBB-PROJECTIONS/blob/main/ucsd_mbb_logo.jpg)
 # Neural Networks for Predictive Analysis in Men's College Basketball
 
 Predictive analysis for any sport is a notoriously difficult task. Current research suggests that small **neural networks** (3-Layer Network) [1] and ensemble models such as **extra tree classifiers** and **gradient boosting** [2] can be effective in addressing these challenges. This project aims to expand upon previous research by training individual Multi-Layer Perceptron models for each of 15 basketball metrics: **GP**, **GS**, **MIN/G**, **FG%**, **3PT%**, **FT%**, **PPG**, **REB/G**, **OFF_REB/G**, **DEF_REB/G**, **PF/G**, **AST/G**, **TO/G**, **STL/G**, **BLK/G** for a player's subsequent year of data. 
