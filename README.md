@@ -22,6 +22,7 @@ This approach effectively generates a rough estimate of the subject player's oth
 To enhance the predictive accuracy and contextual relevance of player performance forecasts within the model, two significant customizability features were introduced. These enhancements are grounded in the principle that a more nuanced representation of a player's potential role and conditions can substantially improve prediction quality. This approach aligns with feedback from coaches seeking greater adaptability in predictive analytics.
 
 ### Dynamic Feature Adjustment
+
 The first customizable option allows for the dynamic adjustment of specific player features - namely 'Games Played' (GP), 'Games Started' (GS), and 'Minutes per Game' (MIN/G). This functionality enables users to tailor predictions to better reflect anticipated changes in a player's use (ex: change 'MIN/G' from 18.4 to 24). Unlike adjustments that might naively scale predictions, this mechanism recognizes the complexity of performance metrics interrelations. Adjusting for anticipated changes involves a refined process that filters out statistical outliers and reassesses player similarity by ranking the body of similar players by the Mean Squared Error on the changed metric(s) and using a weighted median to re-evaluate feature estimates. This method ensures a more grounded and realistic forecast, acknowledging that shifts in one aspect of a player's profile do not uniformly translate across all performance indicators.
 
 ### Adding Context with Similar Players
