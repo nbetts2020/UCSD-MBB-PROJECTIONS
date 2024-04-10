@@ -18,6 +18,7 @@ At the inference stage, only five features are initially known: 'Player', 'Posit
 2. From this subset, select players with available data for the subsequent year. Then, calculate the median value for each feature among these players' data for the following year.
    
 This approach effectively generates a rough estimate of the subject player's otherwise unknown statistics, providing a viable dataset to feed into the model for accurate predictions.
+
 To enhance the predictive accuracy and contextual relevance of player performance forecasts within the model, two significant customizability features were introduced. These enhancements are grounded in the principle that a more nuanced representation of a player's potential role and conditions can substantially improve prediction quality. This approach aligns with feedback from coaches seeking greater adaptability in predictive analytics.
 
 ### Dynamic Feature Adjustment
