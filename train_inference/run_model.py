@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
 
-from train_inference.preprocessing_helpers import PreprocessingHelpers
-from train_inference.inference_helpers import InferenceHelpers
+from utils.inference_helpers import InferenceHelpers
 
-class RunModel(PreprocessingHelpers):
+from utils.cleaning_helpers import CleaningHelpers
+
+class RunModel():
     def __init__(self, models, change_dict, player_comparisons, assess_predictions):
-        super().__init__()
+        self.data = self.get_data()
         self.models = models
         self.assess_predictions = assess_predictions
         self.data = self.get_data()
@@ -15,10 +16,12 @@ class RunModel(PreprocessingHelpers):
         self.test_data = self.get_test_data() if assess_predictions else None
         self.change_dict = change_dict
         self.player_comparisons = player_comparisons
-        self.top_k_similar_players = 150
 
     def get_data(self):
-        data = pd.read_csv("https://raw.githubusercontent.com/nbetts2020/UCSD-MBB-PROJECTIONS/main/data/Training/basketball_data.csv")
+        csv_file_path = 'data\\Training\\basketball_data.csv'
+        data = pd.read_csv(csv_file_path)
+        cleaning_helper = CleaningHelpers(data)
+        data = cleaning_helper.clean_data()
         return data
 
     def get_train_data(self):
@@ -37,24 +40,29 @@ class RunModel(PreprocessingHelpers):
         print(f"Team: {player_team}")
 
         data_df = self.test_data if assess_predictions else self.data
+
         data_experience_df = data_df[data_df['Occurrence'] > 1].reset_index(drop=True)
 
         random_index_val = np.random.randint(0, len(data_experience_df)) if random_index else None
+
+        inference_helper_instance = InferenceHelpers(change_dict=self.change_dict)
         
-        attributes = InferenceHelpers.get_player_attributes(data_experience_df, player_name, player_position, player_team, index=random_index_val)    
+        attributes = inference_helper_instance.get_player_attributes(data=data_experience_df, player_name=player_name, player_position=player_position, player_team=player_team, index=random_index_val)    
         player_name, player_position, player_team, player_occurrence = attributes
 
         for col, model in self.models.items():
             model.eval()
-            previous_year = InferenceHelpers.get_previous_year(player_name, player_position, player_team, player_occurrence)
+            previous_year = inference_helper_instance.get_previous_year(player_name, player_position, player_team, player_occurrence)
             
-            all_numerical_data = InferenceHelpers.prepare_numerical_data(data_df, assess_predictions, previous_year.index)
+            all_numerical_data = inference_helper_instance.prepare_numerical_data(data_df, assess_predictions, previous_year.index)
 
-            similar_players = InferenceHelpers.find_similar_players(previous_year, all_numerical_data, model)
+            print(all_numerical_data, previous_year, "app")
+
+            similar_players = inference_helper_instance.find_similar_players(all_numerical_data, previous_year)
 
             if self.player_comparisons is not None:
-                similar_players = InferenceHelpers.adjust_predictions_based_on_comparison(similar_players, self.player_comparisons)
+                similar_players = inference_helper_instance.adjust_predictions_based_on_comparison(self.player_comparisons)
             
-            selected_features_tensor = InferenceHelpers.similar_players_to_tensor(similar_players, previous_year)
+            selected_features_tensor = inference_helper_instance.similar_players_to_tensor(similar_players, previous_year)
 
-            InferenceHelpers.predict_output(model, selected_features_tensor, col, previous_year, assess_predictions, data_df, random_index_val)
+            inference_helper_instance.predict_output(model, selected_features_tensor, col, previous_year, assess_predictions, data_df, random_index_val)

@@ -3,9 +3,11 @@ import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 
-from train_inference.preprocessing_helpers import PreprocessingHelpers
+from utils.preprocessing_helpers import PreprocessingHelpers
 from train_inference.model import MLP
 from train_inference.prediction_metrics import PredictionMetrics
+
+from utils.cleaning_helpers import CleaningHelpers
 
 class Train:
     def __init__(self):
@@ -16,7 +18,10 @@ class Train:
         self.models = {}
 
     def get_data(self):
-        data = pd.read_csv("https://raw.githubusercontent.com/nbetts2020/UCSD-MBB-PROJECTIONS/main/data/Training/basketball_data.csv")
+        csv_file_path = 'data\\Training\\basketball_data.csv'
+        data = pd.read_csv(csv_file_path)
+        cleaning_helper = CleaningHelpers(data)
+        data = cleaning_helper.clean_data()
         return data
     
     def train(self):

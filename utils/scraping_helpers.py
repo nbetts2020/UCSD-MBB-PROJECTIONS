@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
+
 import requests
 from bs4 import BeautifulSoup
 import re
 from langchain.tools import DuckDuckGoSearchResults
-import json
 from datetime import datetime
 
 from selenium import webdriver
@@ -17,7 +17,6 @@ from utils.helper_jsons_scraping import headers, conference_scores
 
 class BasketballScraper():
     def __init__(self):
-        super().__init__()
         self.driver = self.setup_chrome_driver()
         self.d2_schools = self.get_d2_schools()
         self.hardcoded_mbkb_url_schemas = self.get_hardcoded_mbkb_url_schemas()
