@@ -1,12 +1,12 @@
-hardcoded_mbkb_url_schemas = {
+HARDCODED_MBKB_URL_SCHEMAS = {
     'Anderson University (South Carolina)': 'andersonsc', 'American International College': 'americanintl'
 }
 
-headers = {
+HEADERS = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
 }
 
-conference_scores = {
+CONFERENCE_SCORES = {
     "Pacific West Conference": 0.75,
     "Rocky Mountain Athletic Conference": 0.75,
     "Northeast-10 Conference": 0.75,
@@ -86,3 +86,7 @@ NUMERICAL_COLS = ['GP', 'GS', 'MIN/G', 'FG%', '3PT%', 'FT%', 'PPG', 'REB/G', 'OF
 
 FEATURES = ['Player', 'GP', 'GS', 'MIN/G', 'FG%', '3PT%', 'FT%', 'PPG', 'OFF_REB/G', 'DEF_REB/G', 'REB/G', 'AST/G', 'TO/G', 'PF/G', 'STL/G', 'BLK/G',
             'Position', 'Team', 'Conference', 'Conference_Grade', 'Occurrence']
+
+PDF_COLS = ['Number', 'Player', 'GP-GS', 'MIN', 'MIN/G', 'FGM-FGA', 'FG%', '3PT-3PTA', '3PT%', 'FT-FTA', 'FT%', 'OFF REB', 'DEF REB', 'REB', 'AVG', 'PF', 'DQ', 'AST', 'TO', 'BLK', 'STL', 'PTS', 'PPG']
+
+APPEND_FORMAT = ['Player', 'GP', 'GS', 'MIN' ,'MIN/G', 'FGM', 'FGA', 'FG%', '3PT', '3PTA', '3PT%', 'FT', 'FTA', 'FT%', 'PTS', 'AVG', 'OFF REB', 'DEF REB', 'REB', 'REB/G', 'PF', 'AST', 'TO', 'STL', 'BLK']

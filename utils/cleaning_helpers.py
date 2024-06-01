@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from utils.helper_jsons_scraping import conference_scores
+from utils.helper_jsons_scraping import CONFERENCE_SCORES
 
 class CleaningHelpers:
     def __init__(self, data):
@@ -21,7 +21,7 @@ class CleaningHelpers:
         return data
     
     def get_conference_scores(self):
-        return conference_scores
+        return CONFERENCE_SCORES
 
     def change_column_scale(self):
         self.data['PPG'] = self.data['PTS'] / self.data['GP']
