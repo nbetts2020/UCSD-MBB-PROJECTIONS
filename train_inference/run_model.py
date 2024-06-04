@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+import os
+
 from utils.inference_helpers import InferenceHelpers
 
 from utils.cleaning_helpers import CleaningHelpers
@@ -18,7 +20,7 @@ class RunModel():
         self.player_comparisons = player_comparisons
 
     def get_data(self):
-        csv_file_path = 'data\\Training\\basketball_data.csv'
+        csv_file_path = os.path.join('data', 'Training', 'basketball_data.csv')
         data = pd.read_csv(csv_file_path)
         cleaning_helper = CleaningHelpers(data)
         data = cleaning_helper.clean_data()

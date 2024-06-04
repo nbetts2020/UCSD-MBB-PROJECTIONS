@@ -3,6 +3,8 @@ import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 
+import os
+
 from utils.preprocessing_helpers import PreprocessingHelpers
 from train_inference.model import MLP
 from train_inference.prediction_metrics import PredictionMetrics
@@ -18,7 +20,7 @@ class Train:
         self.models = {}
 
     def get_data(self):
-        csv_file_path = 'data\\Training\\basketball_data.csv'
+        csv_file_path = os.path.join('data', 'Training', 'basketball_data.csv')
         data = pd.read_csv(csv_file_path)
         cleaning_helper = CleaningHelpers(data)
         data = cleaning_helper.clean_data()

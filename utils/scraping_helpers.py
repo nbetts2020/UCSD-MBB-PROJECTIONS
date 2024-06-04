@@ -12,6 +12,7 @@ import logging
 import pdfplumber
 from io import BytesIO
 import gc
+import os
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -48,7 +49,7 @@ class BasketballScraper():
         return driver
     
     def get_d2_schools(self):
-        csv_file_path = 'data\\Scraping\\d2_basketball_schools.csv'
+        csv_file_path = os.path.join('data', 'Scraping', 'd2_basketball_schools.csv')
         data = pd.read_csv(csv_file_path)
         return data
     
@@ -532,12 +533,11 @@ class BasketballScraper():
     
     def validate_website(self, url, url_type, check_type='abbr'): # validating website - schools insert the year of data a few different ways, either something like '2023-2024', '2023-24', or '2023'
         try:
-            print(url, "ok")
             response = requests.get(url, headers=self.headers, allow_redirects=True)
-            print(url,"ll")
             final_url = response.url
-            print(final_url, "po")
-            print(response.history, response.status_code)
+
+            if response.status_code == 200:
+                return final_url
 
             if response.history or response.status_code in range(300, 405):
                 if url_type == "roster":
@@ -556,10 +556,10 @@ class BasketballScraper():
                         return self.validate_website(new_url, url_type, None)
                 elif url_type == "pdf":
                     if check_type == 'abbr':
-                        new_url = url[:-8] + url[-6:]
+                        new_url = url[:-2] + '20' + url[-2:]
                         return self.validate_website(new_url, url_type, 'year')
                     elif check_type == 'year':
-                        new_url = url[:-11] + '20' + url[-6:]
+                        new_url = url[:-5]
                         return self.validate_website(new_url, url_type, None)
                 elif url_type == "pdf_hydrated":
                     if check_type == 'full':
@@ -568,13 +568,10 @@ class BasketballScraper():
                     elif check_type == 'year':
                         new_url = url[:-15] + url[-10:]
                         return self.validate_website(new_url, url_type, None)
-            elif response.status_code == 200:
-                return final_url
             return 'Website not found'
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return None
-        
     
     def team_data(self, team):
         df = pd.DataFrame()
@@ -585,157 +582,105 @@ class BasketballScraper():
         current_month_day = datetime.now().month, datetime.now().day
         cutoff_month_day = (3, 18)
 
-        if current_month_day >= cutoff_month_day:
-            end_year = current_year
-        else:
-            end_year = current_year - 1
-
+        end_year = current_year if current_month_day >= cutoff_month_day else current_year - 1
         years = [f"{year}-{year+1}" for year in range(start_year, end_year)]
 
         original_suffix = '/sports/mens-basketball/'
         roster_suffix = original_suffix + 'roster/'
         individual_overall_suffix = original_suffix + 'stats/xxxYEARxxx#individual'
+        modified_suffix = '/sports/mbkb/'
+        modified_roster_suffix = modified_suffix + 'xxxYEARxxx/roster'
+        pdf_suffix = "/sports/mens-basketball/stats/xxxYEARxxx/pdf"
+        pdf_hydrated_suffix = f"{website[:8]}data.{website[8:]}/pdf/m_basketball/xxxYEARxxx/Stats.pdf"
 
-        try:
-            for year in years:
-                try:
-                    individual_overall_website = self.validate_website(website + individual_overall_suffix.replace("xxxYEARxxx", year), 'individual_overall')
-                    roster_website = self.validate_website(website + roster_suffix + year, 'roster')
+        def get_conference_info(team, new_df):
+            new_df['Team'] = team
+            new_df['Year'] = year
+            new_df['Conference'] = self.d2_schools.loc[self.d2_schools['Name'] == team, 'Conference'].values[0]
+            new_df['Conference_Grade'] = new_df['Conference'].map(self.conference_scores).fillna(1)
+            return new_df
 
-                    if individual_overall_website is None or roster_website is None:
-                        print(team, year, "Failed - Initial URLs")
-                        raise ValueError("Initial URLs failed validation")
+        for year in years:
+            try:
+                individual_overall_website = self.validate_website(website + individual_overall_suffix.replace("xxxYEARxxx", year), 'individual_overall')
+                roster_website = self.validate_website(website + roster_suffix + year, 'roster')
 
-                    new_df = self.data_table(individual_overall_website, roster_website, "normal")
-                    new_df['Team'] = team
-                    new_df['Year'] = year
-                    new_df['Conference'] = self.d2_schools.loc[self.d2_schools['Name'] == team, 'Conference'].values[0]
-                    new_df['Conference_Grade'] = new_df['Conference'].map(self.conference_scores).fillna(1)
+                if not individual_overall_website or not roster_website:
+                    raise ValueError("Initial URLs failed validation")
+
+                new_df = self.data_table(individual_overall_website, roster_website, "normal")
+                new_df = get_conference_info(team, new_df)
+                df = df.append(new_df)
+
+                print(team, year, "Success - Initial URLs")
+            except Exception as initial_error: 
+                try: # mbkb case
+                    hit = False
+                    team_name = website.split(".com")[0].replace("https://www.", "")
+                    remove_mascot_search_list = [team_name[:i + 1] for i in range(len(team_name))]
+
+                    for mascot in remove_mascot_search_list:
+                        modified_individual_overall_suffix = website + modified_suffix + f'{year[:-4] + year[-2:]}/teams/' + mascot + '?tmpl=teaminfo-network-monospace-template&sort=ptspg'
+                        if requests.get(modified_individual_overall_suffix, headers=self.headers).status_code == 200:
+                            hit = True
+                            break
+
+                    if not hit:
+                        modified_individual_overall_suffix = website + modified_suffix + f'{year[:-4] + year[-2:]}/teams/' + self.hardcoded_mbkb_url_schemas[team] + '?tmpl=teaminfo-network-monospace-template&sort=ptspg'
+
+                    individual_overall_website = modified_individual_overall_suffix
+                    roster_website = self.validate_website(website + modified_roster_suffix.replace("xxxYEARxxx", year[:-4] + year[-2:]), 'roster')
+                    if not individual_overall_website or not roster_website:
+                        raise ValueError("Modified URLs failed validation")
+
+                    new_df = self.data_table(individual_overall_website, roster_website, type_of_data="mbkb")
+                    new_df = get_conference_info(team, new_df)
                     df = df.append(new_df)
 
-                    print(team, year, "Success - Initial URLs")
-                except Exception as initial_error:  # mbkb case
-                    try:
-                        hit = False
-                        team_name = website.split(".com")[0].replace("https://www.", "")
-                        remove_mascot_search_list = [team_name[:i+1] for i in range(len(team_name))]
-                        modified_suffix = '/sports/mbkb/'
-                        modified_roster_suffix = modified_suffix + 'xxxYEARxxx/roster'
+                    print(team, year, "Success - Modified URLs")
+                except Exception as modified_error:
+                    try: # pdf case
+                        pdf_site = self.validate_website(website + pdf_suffix.replace("xxxYEARxxx", year[:4]), 'pdf')
+                        pdf_cloud_link = self.find_pdf(pdf_site)
+                        pdf_df = self.process_pdf(pdf_cloud_link)
 
-                        for mascot in remove_mascot_search_list:
-                            modified_individual_overall_suffix = website + modified_suffix + f'{year[:-4] + year[-2:]}/teams/' + mascot + '?tmpl=teaminfo-network-monospace-template&sort=ptspg'
-                            requests_status = requests.get(modified_individual_overall_suffix, headers=self.headers).status_code
-                            if requests_status == 200:
-                                hit = True
-                                break
-                        if hit == False:
-                            modified_individual_overall_suffix = website + modified_suffix + f'{year[:-4] + year[-2:]}/teams/' + self.hardcoded_mbkb_url_schemas[team] + '?tmpl=teaminfo-network-monospace-template&sort=ptspg'
+                        roster_website = self.validate_website(website + roster_suffix + year, "roster")
+                        pdf_roster = self.other_get_player_info(roster_website)
 
-                        individual_overall_website = modified_individual_overall_suffix
-                        roster_website = self.validate_website(website + modified_roster_suffix.replace("xxxYEARxxx", year[:-4] + year[-2:]), 'roster')
-                        if individual_overall_website is None or roster_website is None:
-                            print(team, year, "Failed - Modified URLs")
-                            raise ValueError("Modified URLs failed validation")
+                        # pdf_df 'Player' column's last names are all caps, so accounting for case when last name may have multiple capital letters
+                        pdf_df['Player'] = pdf_df['Player'].map(lambda x: ' '.join([x.split(', ')[1], x.split(', ')[0].title()]))
+                        pdf_df['Player_lower'] = pdf_df['Player'].str.lower()
+                        pdf_roster['Name_lower'] = pdf_roster['Name'].str.lower() # lowercasing the name column temporarily then reverting back to pdf_df's 'Player' column once merged
+                        
+                        df = pdf_df.merge(pdf_roster, left_on='Player_lower', right_on='Name_lower', how='inner')
+                        df.drop(columns=['Player_lower', 'Name_lower', 'Academic Year', 'Height'], inplace=True)
+                        df.fillna(0, inplace=True)
 
-                        new_df = self.data_table(individual_overall_website, roster_website, type_of_data="mbkb")
-                        new_df['Team'] = team
-                        new_df['Year'] = year
-                        new_df['Conference'] = self.d2_schools.loc[self.d2_schools['Name'] == team, 'Conference'].values[0]
-                        new_df['Conference_Grade'] = new_df['Conference'].map(self.conference_scores).fillna(0.75)
-                        df = df.append(new_df)
-
-                        print(team, year, "Success - Modified URLs")
-                    except Exception as modified_error:  # pdf case
-                        try:
-                            suffix = "/sports/mens-basketball/stats/xxxYEARxxx/pdf"
-                            print(website + suffix.replace("xxxYEARxxx", year))
-                            pdf_site = self.validate_website(website + suffix.replace("xxxYEARxxx", year[:4]), 'pdf')
-                            pdf_cloud_link = self.find_pdf(pdf_site)
-                            
-                            print(f"PDF cloud link is {pdf_cloud_link}")
-
-                            pdf_df = self.process_pdf(pdf_cloud_link)
-                            print("PDF Processed")
-
-                            roster_website = self.validate_website(website + roster_suffix + year, "roster")
-                            pdf_roster = self.other_get_player_info(roster_website)
+                        print(team, year, "Success - PDF URLs")
+                    except Exception as pdf_error:
+                        try: # pdf hydrated case
+                            roster_suffix = '/sports/mens-basketball/roster/season/xxxYEARxxx/'
+                            pdf_site = self.validate_website(pdf_hydrated_suffix.replace("xxxYEARxxx", year[:-4] + year[-2:]), 'pdf_hydrated', 'full')
+                            print(pdf_site)
+                            pdf_df = self.process_pdf(pdf_site)
+                            print(website + roster_suffix.replace("xxxYEARxxx", year[:4]))
+                            roster_website = self.validate_website(website + roster_suffix.replace("xxxYEARxxx", year[:4]), "roster")
+                            pdf_roster = self.get_roster_hydrated(roster_website)
 
                             pdf_df['Player'] = pdf_df['Player'].map(lambda x: ' '.join([x.split(', ')[1], x.split(', ')[0].title()]))
-
-                            # pdf_df 'Player' column's last names are all caps, so accounting for case when last name may have multiple capital letters
                             pdf_df['Player_lower'] = pdf_df['Player'].str.lower()
-                            pdf_roster['Name_lower'] = pdf_roster['Name'].str.lower()  # lowercasing the name column temporarily then reverting back to pdf_df's 'Player' column once merged
-
-                            df = pdf_df.merge(pdf_roster, left_on='Player_lower', right_on='Name_lower', how='inner')
-                            df.drop(columns=['Player_lower', 'Name_lower', 'Academic Year', 'Height'], inplace=True)
-
-                            df.fillna(0, inplace=True)
-
-                            print(team, year, "Success")
-
-                        except Exception as third_error:
-                            print(f"Failed to process team, year {team, year} with all URL formats: {initial_error}; {modified_error}; {third_error}")
-                            print("opie")
-                            suffix = f"{website[:8]}data.{website[8:]}/pdf/m_basketball/xxxYEARxxx/Stats.pdf"
-                            truncated_year = year[:-4] + year[-2:]
-                            print(suffix.replace("xxxYEARxxx", truncated_year))
-                            pdf_site = self.validate_website(suffix.replace("xxxYEARxxx", truncated_year), 'pdf_hydrated', 'full')
-
-                            pdf_df = self.process_pdf(pdf_cloud_link)
-                            print("PDF Processed")
-                            
-                            roster_website = self.validate_website(website + roster_suffix + year, "roster")
-                            pdf_roster = self.other_get_player_info(roster_website)
-
-                            roster_website = self.validate_website(website + roster_suffix + year, "roster")
-                            pdf_roster = self.other_get_player_info(roster_website)
-
-                            pdf_df['Player'] = pdf_df['Player'].map(lambda x: ' '.join([x.split(', ')[1], x.split(', ')[0].title()]))
-
-                            # pdf_df 'Player' column's last names are all caps, so accounting for case when last name may have multiple capital letters
-                            pdf_df['Player_lower'] = pdf_df['Player'].str.lower()
-                            pdf_roster['Name_lower'] = pdf_roster['Name'].str.lower()  # lowercasing the name column temporarily then reverting back to pdf_df's 'Player' column once merged
+                            pdf_roster['Name_lower'] = pdf_roster['Name'].str.lower()
 
                             df = pdf_df.merge(pdf_roster, left_on='Player_lower', right_on='Name_lower', how='inner')
                             df.drop(columns=['Player_lower', 'Name_lower'], inplace=True)
-
                             df.fillna(0, inplace=True)
 
-                            print(team, year, "Success")
-
-                            print(f"Outer error: {outer_error}")
-
-                        continue
-        except Exception as outer_error:
-            suffix = f"https://data.{website}/pdf/m_basketball/xxxYEARxxx/Stats.pdf"
-            pdf_site = self.validate_website(suffix.replace("xxxYEARxxx", year[:-4] + year[-2:]), 'pdf_hydrated', 'full')
-
-            pdf_df = self.process_pdf(pdf_cloud_link)
-            print("PDF Processed")
-            
-            roster_website = self.validate_website(website + roster_suffix + year, "roster")
-            pdf_roster = self.other_get_player_info(roster_website)
-
-            roster_website = self.validate_website(website + roster_suffix + year, "roster")
-            pdf_roster = self.other_get_player_info(roster_website)
-
-            pdf_df['Player'] = pdf_df['Player'].map(lambda x: ' '.join([x.split(', ')[1], x.split(', ')[0].title()]))
-
-            # pdf_df 'Player' column's last names are all caps, so accounting for case when last name may have multiple capital letters
-            pdf_df['Player_lower'] = pdf_df['Player'].str.lower()
-            pdf_roster['Name_lower'] = pdf_roster['Name'].str.lower()  # lowercasing the name column temporarily then reverting back to pdf_df's 'Player' column once merged
-
-            df = pdf_df.merge(pdf_roster, left_on='Player_lower', right_on='Name_lower', how='inner')
-            df.drop(columns=['Player_lower', 'Name_lower'], inplace=True)
-
-            df.fillna(0, inplace=True)
-
-            print(team, year, "Success")
-
-            print(f"Outer error: {outer_error}")
+                            print(team, year, "Success - Hydrated PDF URLs")
+                        except Exception as outer_error:
+                            print(f"Failed to process team, year {team, year} with all URL formats: {initial_error}; {modified_error}; {pdf_error}; {outer_error}")
 
         return df
-    
+
     def data_all(self, team_list):
         df = pd.DataFrame()
         for team in team_list:

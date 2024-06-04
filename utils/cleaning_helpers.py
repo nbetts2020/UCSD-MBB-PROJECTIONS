@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+import os
+
 from utils.helper_jsons_scraping import CONFERENCE_SCORES
 
 class CleaningHelpers:
@@ -16,7 +18,7 @@ class CleaningHelpers:
         ]
 
     def get_d2_schools(self):
-        csv_file_path = 'data\\Scraping\\d2_basketball_schools.csv'
+        csv_file_path = os.path.join('data', 'Scraping', 'd2_basketball_schools.csv')
         data = pd.read_csv(csv_file_path)
         return data
     

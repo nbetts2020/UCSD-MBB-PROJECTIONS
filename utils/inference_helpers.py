@@ -6,6 +6,8 @@ import torch
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics.pairwise import cosine_similarity
 
+import os
+
 from utils.cleaning_helpers import CleaningHelpers
 from utils.helper_jsons_scraping import NUMERICAL_COLS
 
@@ -23,7 +25,7 @@ class InferenceHelpers():
         self.top_k_similar_players = 150
 
     def get_data(self):
-        csv_file_path = 'data\\Training\\basketball_data.csv'
+        csv_file_path = os.path.join('data', 'Training', 'basketball_data.csv')
         data = pd.read_csv(csv_file_path)
         cleaning_helper = CleaningHelpers(data)
         data = cleaning_helper.clean_data()
