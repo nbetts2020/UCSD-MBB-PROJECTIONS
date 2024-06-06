@@ -8,7 +8,7 @@ from utils.helper_jsons_scraping import CONFERENCE_SCORES
 class CleaningHelpers:
     def __init__(self, data):
         self.data = data
-        self.d2_schools = self.get_d2_schools()
+        self.schools = self.get_schools()
         self.conference_scores = self.get_conference_scores()
         self.selected_columns = [
             'Player', 'GP', 'GS', 'MIN/G', 'FG%', '3PT%', 'FT%',
@@ -17,7 +17,7 @@ class CleaningHelpers:
             'Conference', 'Conference_Grade', 'Occurrence'
         ]
 
-    def get_d2_schools(self):
+    def get_schools(self):
         csv_file_path = os.path.join('data', 'Scraping', 'd1_d2_schools.csv')
         data = pd.read_csv(csv_file_path)
         return data
@@ -51,7 +51,7 @@ class CleaningHelpers:
         self.data = self.data.fillna(0)
 
     def map_team_to_conference(self):
-        team_conference_dict = pd.Series(self.d2_schools['Conference'].values, index=self.d2_schools['Name']).to_dict()
+        team_conference_dict = pd.Series(self.schools['Conference'].values, index=self.schools['Name']).to_dict()
         return self.data['Team'].map(team_conference_dict)
     
     def map_conference_to_score(self):
