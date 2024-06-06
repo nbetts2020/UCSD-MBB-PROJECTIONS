@@ -49,7 +49,7 @@ class BasketballScraper():
         return driver
     
     def get_d2_schools(self):
-        csv_file_path = os.path.join('data', 'Scraping', 'd2_basketball_schools.csv')
+        csv_file_path = os.path.join('data', 'Scraping', 'd1_d2_schools.csv')
         data = pd.read_csv(csv_file_path)
         return data
     
