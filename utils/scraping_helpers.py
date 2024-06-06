@@ -25,7 +25,7 @@ from utils.helper_jsons_scraping import HEADERS, CONFERENCE_SCORES, PDF_COLS, AP
 class BasketballScraper():
     def __init__(self):
         self.driver = self.setup_chrome_driver()
-        self.d2_schools = self.get_d2_schools()
+        self.schools = self.get_schools()
         self.hardcoded_mbkb_url_schemas = self.get_hardcoded_mbkb_url_schemas()
         self.headers = self.get_headers()
         self.conference_scores = self.get_conference_scores()
@@ -48,7 +48,7 @@ class BasketballScraper():
         
         return driver
     
-    def get_d2_schools(self):
+    def get_schools(self):
         csv_file_path = os.path.join('data', 'Scraping', 'd1_d2_schools.csv')
         data = pd.read_csv(csv_file_path)
         return data
