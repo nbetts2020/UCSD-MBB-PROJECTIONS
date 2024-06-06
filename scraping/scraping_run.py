@@ -12,7 +12,7 @@ def scraping_main():
     if platform.system() == 'Windows':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     basketball_scraper = BasketballScraper()
-    schools_df = basketball_scraper.d2_schools
+    schools_df = basketball_scraper.schools
     schools_list = list(schools_df['Name'])
     data = basketball_scraper.data_all(schools_list)
 
