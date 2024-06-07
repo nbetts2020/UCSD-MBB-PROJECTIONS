@@ -90,3 +90,8 @@ FEATURES = ['Player', 'GP', 'GS', 'MIN/G', 'FG%', '3PT%', 'FT%', 'PPG', 'OFF_REB
 PDF_COLS = ['Number', 'Player', 'GP-GS', 'MIN', 'MIN/G', 'FGM-FGA', 'FG%', '3PT-3PTA', '3PT%', 'FT-FTA', 'FT%', 'OFF REB', 'DEF REB', 'REB', 'AVG', 'PF', 'DQ', 'AST', 'TO', 'BLK', 'STL', 'PTS', 'PPG']
 
 APPEND_FORMAT = ['Player', 'GP', 'GS', 'MIN' ,'MIN/G', 'FGM', 'FGA', 'FG%', '3PT', '3PTA', '3PT%', 'FT', 'FTA', 'FT%', 'PTS', 'AVG', 'OFF REB', 'DEF REB', 'REB', 'REB/G', 'PF', 'AST', 'TO', 'STL', 'BLK']
+
+INTERMEDIATE_COLS = ['Player', 'GP', 'GS', 'MIN', 'MIN/G', 'FGM', 'FGA', 'FG%', '3PT',
+       '3PTA', '3PT%', 'FT', 'FTA', 'FT%', 'PTS', 'AVG', 'OFF REB', 'DEF REB', 'OFF_REB/G', 'DEF_REB/G',
+       'REB', 'REB/G', 'PF', 'AST', 'TO', 'STL', 'BLK', 'PPG', 'AST/G', 'TO/G', 'PF/G', 'STL/G', 'BLK/G', 'Position', 'Team',
+       'Year', 'Conference', 'Conference_Grade']
