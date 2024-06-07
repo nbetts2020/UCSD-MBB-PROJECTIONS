@@ -22,7 +22,7 @@ For each target column, a Multilayer Perceptron (MLP) model is instantiated. The
   
 **Output Layer**: Downsamples to an output size of 1, which corresponds to the predicted target variable's dimension.
 
-The model uses Mean Squared Error (MSE) as the loss function and the Adam Optimizer with a learning rate of 0.001 for updating the network weights. Training is conducted over 15 epochs.
+The model uses Mean Squared Error (MSE) as the loss function and the Adam Optimizer with a learning rate of 0.001 for updating the network weights, conducted over 15 epochs.
 
 ## Inference
 On run time, a few adjustments were made to optimize the performance of the model. The neural network takes a many-to-one mapping of inputs to output, wherein a metric like 'GP' (Games Played) is predicted only by knowing all other features of a player (i.e. 'GS', 'MIN/G', 'FG%', '3PT%', etc. goes into the input, with 'GP' being the output - this being the case for every predicted variable). 
