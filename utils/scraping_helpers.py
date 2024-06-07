@@ -321,6 +321,8 @@ class BasketballScraper():
                 'Name': names,
                 'Position': positions
             })
+        else:
+            print(f"Failed to fetch the webpage. Status code: {response.status_code}")
 
             return df
     
