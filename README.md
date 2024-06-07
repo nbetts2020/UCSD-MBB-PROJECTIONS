@@ -19,6 +19,7 @@ For each target column, a Multilayer Perceptron (MLP) model is instantiated. The
   - **Second hidden layer**: 64 dimensions
   - **Third hidden layer**: 32 dimensions
   - **ReLU** activation functions are applied between these layers to introduce non-linearity.
+  
 **Output Layer**: Downsamples to an output size of 1, which corresponds to the predicted target variable's dimension.
 
 The model uses Mean Squared Error (MSE) as the loss function and the Adam Optimizer with a learning rate of 0.001 for updating the network weights. Training is conducted over 15 epochs.
