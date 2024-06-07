@@ -11,7 +11,16 @@ By prioritizing flexibility, the scraping methodology of this project attempted 
 ## Training
 In the preprocessing stage, data was preprocessed according to the specified conditions - either for a scenario where the test loss was required or not (the last year of data was set aside for test set if specified). This preprocessing involved basic data cleaning, including dropping rows with mostly zeros, to more involved processes such as standardizing numerical features, and applying one-hot encoding to categorical features. This transformed data was then loaded into a DataLoader to facilitate batch processing (batch size set to 64) during model training.
 
-For each target column, a Multilayer Perceptron (MLP) model was instantiated. The MLP starts by transforming the 21-dimensional input vector into a 128-dimensional vector. It then downscales through successive fully connected layers, reducing from 128 to 64 to 32, with ReLU activation functions introducing non-linearity between these layers. The final layer downsamples to an output size of 1, corresponding to the predicted target variable's dimension. Mean Squared Error (MSE) as the loss function and the Adam Optimizer to update the network weights, with a learning rate of 0.001, over 15 epochs.
+For each target column, a Multilayer Perceptron (MLP) model is instantiated. The MLP architecture is as follows:
+
+- **Input Layer**: Transforms the 21-dimensional input vector into a 128-dimensional vector.
+- **Hidden Layers**: Consists of fully connected layers that reduce the dimensions in sequence:
+--**First hidden layer**: 128 dimensions
+--**Second hidden layer**: 64 dimensions
+--**Third hidden layer**: 32 dimensions
+- **ReLU** activation functions are applied between these layers to introduce non-linearity.
+**Output Layer**: Downsamples to an output size of 1, which corresponds to the predicted target variable's dimension.
+The model uses Mean Squared Error (MSE) as the loss function and the Adam Optimizer with a learning rate of 0.001 for updating the network weights. Training is conducted over 15 epochs.
 
 ## Inference
 On run time, a few adjustments were made to optimize the performance of the model. The neural network takes a many-to-one mapping of inputs to output, wherein a metric like 'GP' (Games Played) is predicted only by knowing all other features of a player (i.e. 'GS', 'MIN/G', 'FG%', '3PT%', etc. goes into the input, with 'GP' being the output - this being the case for every predicted variable). 
