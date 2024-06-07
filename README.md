@@ -26,7 +26,7 @@ The model uses Mean Squared Error (MSE) as the loss function and the Adam Optimi
 
 ## Inference
 On run time, a few adjustments were made to optimize the performance of the model. The neural network takes a many-to-one mapping of inputs to output, wherein a metric like 'GP' (Games Played) is predicted only by knowing all other features of a player (i.e. 'GS', 'MIN/G', 'FG%', '3PT%', etc. goes into the input, with 'GP' being the output - this being the case for every predicted variable). 
-At the inference stage, only five features are initially known: 'Player', 'Position', 'Team', 'Conference', and 'Conference Grade'. This presents a challenge in predicting the remaining features necessary for analysis, the devised solution involves a two-step process to estimate these unknown features:
+At the inference stage, only five features are initially known: 'Player', 'Position', 'Team', 'Conference', and 'Conference Grade'. This presents a challenge in predicting the remaining features necessary for analysis. The devised solution involves a two-step process to estimate these unknown features:
 
 1. Identify the top 150 players most similar to the subject player from the previous year, using cosine similarity for comparison.
 2. From this subset, select players with available data for the subsequent year. Then, calculate the median value for each feature among these players' data for the following year.
