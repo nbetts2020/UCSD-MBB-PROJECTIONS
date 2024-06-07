@@ -3,19 +3,20 @@ import numpy as np
 
 import os
 
-from utils.helper_jsons_scraping import CONFERENCE_SCORES
+from utils.helper_jsons_scraping import CONFERENCE_SCORES, INTERMEDIATE_COLS
 
 class CleaningHelpers:
     def __init__(self, data):
         self.data = data
         self.schools = self.get_schools()
         self.conference_scores = self.get_conference_scores()
+        self.intermediate_cols = self.get_intermediate_cols()
         self.selected_columns = [
             'Player', 'GP', 'GS', 'MIN/G', 'FG%', '3PT%', 'FT%',
             'OFF_REB/G', 'DEF_REB/G', 'REB/G', 'PPG', 'AST/G', 'TO/G',
             'PF/G', 'STL/G', 'BLK/G', 'Position', 'Team', 'Year',
             'Conference', 'Conference_Grade', 'Occurrence'
-        ]
+        ] # can probably move this set of columns to helper_jsons_scraping.py
 
     def get_schools(self):
         csv_file_path = os.path.join('data', 'Scraping', 'd1_d2_schools.csv')
@@ -24,6 +25,9 @@ class CleaningHelpers:
     
     def get_conference_scores(self):
         return CONFERENCE_SCORES
+
+    def get_intermediate_cols(self):
+        return INTERMEDIATE_COLS
 
     def change_column_scale(self):
         self.data['PPG'] = self.data['PTS'] / self.data['GP']
@@ -35,10 +39,7 @@ class CleaningHelpers:
         self.data['DEF_REB/G'] = self.data['DEF REB'] / self.data['GP']
         self.data['AST/G'] = self.data['AST'] / self.data['GP']
 
-        self.data = self.data[['Player', 'GP', 'GS', 'MIN', 'MIN/G', 'FGM', 'FGA', 'FG%', '3PT',
-       '3PTA', '3PT%', 'FT', 'FTA', 'FT%', 'PTS', 'AVG', 'OFF REB', 'DEF REB', 'OFF_REB/G', 'DEF_REB/G',
-       'REB', 'REB/G', 'PF', 'AST', 'TO', 'STL', 'BLK', 'PPG', 'AST/G', 'TO/G', 'PF/G', 'STL/G', 'BLK/G', 'Position', 'Team',
-       'Year', 'Conference', 'Conference_Grade']]
+        self.data = self.data[self.intermediate_cols]
         self.data = self.data.fillna(0)
 
         # Position can be somewhat interchangeable with team here, though team can mess up with transfers
